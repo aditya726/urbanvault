@@ -1,26 +1,22 @@
 import express from 'express';
 const router = express.Router();
+import {
+    getProperties,
+    getPropertyById,
+    createProperty,
+    updateProperty,
+    deleteProperty
+} from '../controllers/propertyController.js';
+import { protect, seller } from '../middleware/authMiddleware.js';
 
-// @route   GET api/properties
-// @desc    Get all properties with filtering options
-// @access  Public
-router.get('/', (req, res) => {
-    res.json({ message: 'Get all properties with filters', filters: req.query });
-});
+// Public routes
+router.get('/', getProperties);
+router.get('/:id', getPropertyById);
 
-// @route   POST api/properties
-// @desc    Create a new property listing
-// @access  Private (Seller only)
-router.post('/', (req, res) => {
-    res.json({ message: 'Create a new property' });
-});
+// Private seller routes
+router.post('/', protect, seller, createProperty);
+router.put('/:id', protect, seller, updateProperty);
+router.delete('/:id', protect, seller, deleteProperty);
 
-// @route   GET api/properties/:id
-// @desc    Get a single property by ID
-// @access  Public
-router.get('/:id', (req, res) => {
-    res.json({ message: `Get property with ID ${req.params.id}` });
-});
 
 export default router;
-

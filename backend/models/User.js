@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
-const Schema = mongoose.Schema;
+import bcrypt from 'bcryptjs';
 
-const userSchema = new Schema({
+const userSchema = mongoose.Schema({
     username: {
         type: String,
         required: true,
@@ -30,8 +30,6 @@ const userSchema = new Schema({
         type: Number,
         default: 0
     },
-    // We will calculate average rating from the Review model
-    // but can store a cached version here for performance if needed.
     averageRating: {
         type: Number,
         default: 0
@@ -45,11 +43,27 @@ const userSchema = new Schema({
         trim: true,
     }
 }, {
-    timestamps: true // Adds createdAt and updatedAt timestamps
+    timestamps: true
 });
 
-// A pre-save hook for password hashing can be added here later using bcrypt
+// Method to compare entered password with the hashed password
+userSchema.methods.matchPassword = async function(enteredPassword) {
+    return await bcrypt.compare(enteredPassword, this.password);
+};
+
+// Middleware to hash password before saving the user
+userSchema.pre('save', async function(next) {
+    // Only run this function if password was modified (or is new)
+    if (!this.isModified('password')) {
+        return next();
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+});
+
 
 const User = mongoose.model('User', userSchema);
 
-module.exports = User;
+export default User;

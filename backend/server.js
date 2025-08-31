@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 
 import connectDB from './config/db.js';
+import { notFound, errorHandler } from './middleware/errorMiddleware.js'; // Import error handlers
 import userRoutes from './routes/userRoutes.js';
 import propertyRoutes from './routes/propertyRoutes.js';
 
@@ -26,10 +27,13 @@ app.get('/', (req, res) => {
 app.use('/api/users', userRoutes);
 app.use('/api/properties', propertyRoutes);
 
+// --- Custom Error Handling ---
+app.use(notFound);
+app.use(errorHandler);
+
 // --- Server Initialization ---
 const PORT = process.env.PORT;
 
 app.listen(PORT, () => {
   console.log(`Server is running in ${process.env.NODE_ENV} mode on port ${PORT}`);
 });
-
