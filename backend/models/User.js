@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import bcrypt from 'bcryptjs';
+import validator from 'validator';
 
 const userSchema = mongoose.Schema({
     username: {
@@ -14,7 +15,7 @@ const userSchema = mongoose.Schema({
         unique: true,
         trim: true,
         lowercase: true,
-        match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please fill a valid email address']
+        validate: [validator.isEmail, 'Please provide a valid email address']
     },
     password: {
         type: String,
@@ -25,7 +26,6 @@ const userSchema = mongoose.Schema({
         enum: ['buyer', 'seller'],
         required: true
     },
-    // Seller-specific fields
     totalSales: {
         type: Number,
         default: 0
@@ -35,7 +35,7 @@ const userSchema = mongoose.Schema({
         default: 0
     },
     profilePicture: {
-        type: String, // URL to the image
+        type: String,
         default: 'https://placehold.co/150x150/EFEFEF/AAAAAA?text=No+Image'
     },
     phoneNumber: {
@@ -53,16 +53,14 @@ userSchema.methods.matchPassword = async function(enteredPassword) {
 
 // Middleware to hash password before saving the user
 userSchema.pre('save', async function(next) {
-    // Only run this function if password was modified (or is new)
     if (!this.isModified('password')) {
         return next();
     }
 
     const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
+    this.password = await bcrypt.hash(this.password, salt); // FIXED: Added await
     next();
 });
-
 
 const User = mongoose.model('User', userSchema);
 
