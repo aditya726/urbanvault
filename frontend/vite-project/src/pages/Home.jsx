@@ -13,7 +13,7 @@ export default function Home() {
   useEffect(() => {
     const fetchFeatured = async () => {
       try {
-        const { data } = await API.get('/api/properties?limit=3'); // Assuming your API can take a limit
+        const { data } = await API.get('/api/properties?limit=3');
         setFeaturedProperties(data);
       } catch (error) {
         console.error("Failed to fetch featured properties:", error);
@@ -30,20 +30,21 @@ export default function Home() {
   }
 
   return (
-    <div className="container mx-auto">
+    // --- FIX: Added responsive padding ---
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8">
       {/* Hero Section */}
-      <section className="text-center py-20 bg-gray-50 rounded-lg my-8">
-        <h1 className="text-5xl font-bold mb-4 tracking-tight">Find Your Next Perfect Home</h1>
-        <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+      <section className="text-center py-16 sm:py-20 bg-gray-50 rounded-lg my-8">
+        <h1 className="text-4xl sm:text-5xl font-bold mb-4 tracking-tight">Find Your Next Perfect Home</h1>
+        <p className="text-lg sm:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
           The best place to find the house of your dreams. Let's get started by searching for a location.
         </p>
-        <form onSubmit={handleSearch} className="flex max-w-2xl mx-auto">
+        <form onSubmit={handleSearch} className="flex max-w-xl mx-auto p-1">
           <Input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Enter a location, city, or address"
-            className="rounded-r-none h-12 text-lg"
+            className="rounded-r-none h-12 text-base"
           />
           <Button type="submit" className="rounded-l-none h-12">Search</Button>
         </form>

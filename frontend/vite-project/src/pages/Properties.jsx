@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import API from '../api';
 import { PropertyCard } from "../components/PropertyCard";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from '@/components/ui/separator';
 
@@ -26,7 +26,6 @@ export default function Properties() {
         const fetchProperties = async () => {
             setIsLoading(true);
             try {
-                // Remove empty filter values before sending
                 const activeFilters = Object.fromEntries(
                     Object.entries(filters).filter(([_, v]) => v !== '' && v !== 'All')
                 );
@@ -38,7 +37,10 @@ export default function Properties() {
                 setIsLoading(false);
             }
         };
-        fetchProperties();
+        const timer = setTimeout(() => {
+            fetchProperties();
+        }, 500); // Debounce requests
+        return () => clearTimeout(timer);
     }, [filters]);
 
     const handleFilterChange = (key, value) => {
@@ -48,53 +50,67 @@ export default function Properties() {
     return (
         <div className="container mx-auto py-8">
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                {/* Filters Sidebar */}
-                <aside className="lg:col-span-1 p-4 border rounded-lg h-fit bg-card">
-                    <h3 className="font-bold text-xl mb-4">Filter Properties</h3>
+                {/* --- Filters Sidebar --- */}
+                <aside className="lg:col-span-1 p-4 border rounded-lg h-fit bg-card shadow-sm">
+                    <h3 className="font-bold text-lg mb-4">Filter Properties</h3>
                     <Separator />
-                    <div className="space-y-4 mt-4">
-                        <Input 
-                            placeholder="Location (e.g., California)" 
-                            value={filters.location}
-                            onChange={(e) => handleFilterChange('location', e.target.value)}
-                        />
-                         <Select onValueChange={(value) => handleFilterChange('propertyType', value)} defaultValue="All">
-                            <SelectTrigger>
-                                <SelectValue placeholder="Property Type" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="All">All Types</SelectItem>
-                                <SelectItem value="House">House</SelectItem>
-                                <SelectItem value="Apartment">Apartment</SelectItem>
-                                <SelectItem value="Villa">Villa</SelectItem>
-                                <SelectItem value="Commercial">Commercial</SelectItem>
-                                <SelectItem value="Land">Land</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        <div className='flex gap-2'>
-                           <Input 
-                                placeholder="Min Price" 
-                                type="number" 
-                                value={filters.minPrice}
-                                onChange={(e) => handleFilterChange('minPrice', e.target.value)}
-                            />
-                           <Input 
-                                placeholder="Max Price" 
-                                type="number" 
-                                value={filters.maxPrice}
-                                onChange={(e) => handleFilterChange('maxPrice', e.target.value)}
+                    <div className="space-y-6 mt-4">
+                        <div>
+                             <Label>Location</Label>
+                             <Input 
+                                placeholder="e.g., California" 
+                                value={filters.location}
+                                onChange={(e) => handleFilterChange('location', e.target.value)}
                             />
                         </div>
+                        <div>
+                            <Label>Property Type</Label>
+                            <Select onValueChange={(value) => handleFilterChange('propertyType', value)} defaultValue="All">
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Property Type" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="All">All Types</SelectItem>
+                                    <SelectItem value="House">House</SelectItem>
+                                    <SelectItem value="Apartment">Apartment</SelectItem>
+                                    <SelectItem value="Villa">Villa</SelectItem>
+                                    <SelectItem value="Commercial">Commercial</SelectItem>
+                                    <SelectItem value="Land">Land</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <fieldset>
+                            <Label>Price Range</Label>
+                            <div className='flex gap-2 mt-2'>
+                               <Input 
+                                    placeholder="Min" 
+                                    type="number" 
+                                    value={filters.minPrice}
+                                    onChange={(e) => handleFilterChange('minPrice', e.target.value)}
+                                />
+                               <Input 
+                                    placeholder="Max" 
+                                    type="number" 
+                                    value={filters.maxPrice}
+                                    onChange={(e) => handleFilterChange('maxPrice', e.target.value)}
+                                />
+                            </div>
+                        </fieldset>
                     </div>
                 </aside>
 
-                {/* Property Listings */}
+                {/* --- Property Listings --- */}
                 <main className="lg:col-span-3">
                      <h2 className="text-2xl font-bold mb-4">
-                        {properties.length} Results Found
+                        {isLoading ? 'Searching...' : `${properties.length} Results Found`}
                     </h2>
                     {isLoading ? (
-                        <p>Loading properties...</p>
+                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                            {/* Skeleton Loader can be placed here */}
+                            <div className="h-96 bg-gray-200 rounded-lg animate-pulse"></div>
+                            <div className="h-96 bg-gray-200 rounded-lg animate-pulse"></div>
+                            <div className="h-96 bg-gray-200 rounded-lg animate-pulse"></div>
+                        </div>
                     ) : properties.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                             {properties.map((property) => (

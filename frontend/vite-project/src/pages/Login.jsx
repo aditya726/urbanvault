@@ -24,8 +24,8 @@ export default function Login() {
   };
 
   return (
-    <div className="container flex items-center justify-center py-20">
-      <Card className="mx-auto max-w-sm">
+    <div className="container flex items-center justify-center min-h-[calc(100vh-150px)] py-12">
+      <Card className="mx-auto max-w-md w-full">
         <CardHeader>
           <CardTitle className="text-2xl">Login</CardTitle>
           <CardDescription>

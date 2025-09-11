@@ -7,12 +7,21 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [isAuthLoading, setIsAuthLoading] = useState(true); 
   const navigate = useNavigate();
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('userInfo');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
+    // --- FIX: Wrap logic in try/finally to ensure loading state is always updated ---
+    try {
+      const storedUser = localStorage.getItem('userInfo');
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
+      }
+    } catch (error) {
+        console.error("Failed to parse user info, logging out.", error);
+        localStorage.removeItem('userInfo');
+    } finally {
+      setIsAuthLoading(false); 
     }
   }, []);
 
@@ -65,7 +74,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, toggleWishlist }}>
+    // --- FIX: Expose isAuthLoading in the provider's value ---
+    <AuthContext.Provider value={{ user, isAuthLoading, login, register, logout, toggleWishlist }}>
       {children}
     </AuthContext.Provider>
   );

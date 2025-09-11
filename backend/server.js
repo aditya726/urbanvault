@@ -35,7 +35,9 @@ const limiter = rateLimit({
 app.use('/api', limiter);
 
 // --- CORS ---
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:5173'
+}));
 
 // --- API Routes ---
 app.get('/', (req, res) => {

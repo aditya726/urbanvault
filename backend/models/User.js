@@ -36,8 +36,6 @@ const userSchema = mongoose.Schema({
     phoneNumber: {
         type: String,
         trim: true,
-        unique: true,
-        sparse: true
     },
     wishlist: [{ // Added wishlist
         type: mongoose.Schema.Types.ObjectId,

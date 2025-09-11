@@ -1,6 +1,22 @@
 import asyncHandler from 'express-async-handler';
 import Property from '../models/Property.js';
 
+const uploadFromBuffer = (buffer) => {
+    return new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+            { folder: "property-listings" }, // Optional: organize uploads in a folder
+            (error, result) => {
+                if (result) {
+                    resolve(result);
+                } else {
+                    reject(error);
+                }
+            }
+        );
+        streamifier.createReadStream(buffer).pipe(uploadStream);
+    });
+};
+
 // @desc    Fetch all properties with filtering
 // @route   GET /api/properties
 // @access  Public
@@ -56,16 +72,48 @@ const getPropertyById = asyncHandler(async (req, res) => {
 // @desc    Create a property
 // @route   POST /api/properties
 // @access  Private
-const createProperty = asyncHandler(async (req, res) => {
-    // You'll get all data from req.body
-    const property = new Property({
-        ...req.body,
-        seller: req.user._id, // from protect middleware
-    });
+const createProperty = async (req, res) => {
+    try {
+        const { title, description, price, location, address, bedrooms, bathrooms, area, propertyType, amenities } = req.body;
+        
+        // 1. Check if files were uploaded
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({ message: 'Please upload at least one image.' });
+        }
 
-    const createdProperty = await property.save();
-    res.status(201).json(createdProperty);
-});
+        // 2. Upload images to Cloudinary in parallel
+        const uploadPromises = req.files.map(file => uploadFromBuffer(file.buffer));
+        const uploadResults = await Promise.all(uploadPromises);
+        
+        // 3. Get the secure URLs of the uploaded images
+        const imageUrls = uploadResults.map(result => result.secure_url);
+
+        // 4. Create a new property instance with the data
+        const newProperty = new Property({
+            seller: req.user.id, // Comes from your auth middleware
+            title,
+            description,
+            price: Number(price),
+            location,
+            address,
+            bedrooms: Number(bedrooms),
+            bathrooms: Number(bathrooms),
+            area: Number(area),
+            propertyType,
+            amenities,
+            images: imageUrls, // Save the Cloudinary URLs
+        });
+
+        // 5. Save the property to the database
+        const savedProperty = await newProperty.save();
+
+        res.status(201).json(savedProperty);
+
+    } catch (error) {
+        console.error('Error creating property:', error);
+        res.status(500).json({ message: 'Server error while creating property.' });
+    }
+};
 
 // @desc    Update a property
 // @route   PUT /api/properties/:id

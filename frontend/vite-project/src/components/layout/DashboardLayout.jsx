@@ -1,6 +1,6 @@
 import { NavLink, Outlet, Navigate } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
-import { List, PlusCircle, Heart } from 'lucide-react';
+import { List, PlusCircle, Heart, Loader2 } from 'lucide-react';
 
 const sidebarNavItems = [
     { title: "My Listings", href: "/dashboard/my-listings", icon: <List className='h-4 w-4' /> },
@@ -9,26 +9,34 @@ const sidebarNavItems = [
 ];
 
 export default function DashboardLayout() {
-    const { user } = useAuth();
+    const { user, isAuthLoading } = useAuth(); // --- FIX: Get isAuthLoading from context
 
+    // --- FIX: Show a loading state while checking for user authentication ---
+    if (isAuthLoading) {
+        return (
+            <div className="flex justify-center items-center h-screen">
+                <Loader2 className="h-8 w-8 animate-spin" />
+            </div>
+        );
+    }
+
+    // --- FIX: This check now runs only after the loading is complete ---
     if (!user) {
-        // Redirect them to the /login page, but save the current location they were
-        // trying to go to. This allows us to send them along to that page after they
-        // log in, which is a nicer user experience than dropping them off on the home page.
         return <Navigate to="/login" replace />;
     }
 
     return (
-        <div className="container mx-auto py-8">
+        <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
+            <h1 className="text-3xl font-bold mb-8">Dashboard</h1>
             <div className="flex flex-col space-y-8 lg:flex-row lg:space-x-12 lg:space-y-0">
-                <aside className="-mx-4 lg:w-1/5">
+                <aside className="lg:w-1/5">
                     <nav className="flex space-x-2 lg:flex-col lg:space-x-0 lg:space-y-1">
                         {sidebarNavItems.map((item) => (
                             <NavLink
                                 key={item.title}
                                 to={item.href}
                                 className={({ isActive }) => 
-                                    `inline-flex items-center gap-2 rounded-md p-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground ${isActive ? 'bg-accent' : 'transparent'}`
+                                    `inline-flex items-center gap-2 rounded-md py-2 px-3 text-sm font-medium transition-colors shrink-0 ${isActive ? 'bg-primary text-primary-foreground' : 'hover:bg-accent hover:text-accent-foreground'}`
                                 }
                             >
                                 {item.icon} {item.title}
@@ -36,7 +44,7 @@ export default function DashboardLayout() {
                         ))}
                     </nav>
                 </aside>
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                     <Outlet />
                 </div>
             </div>
