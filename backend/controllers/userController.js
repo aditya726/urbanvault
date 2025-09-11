@@ -8,31 +8,19 @@ import generateToken from '../utils/generateToken.js';
 const registerUser = asyncHandler(async (req, res) => {
     const { username, email, password, phoneNumber } = req.body;
 
-    const userExistsConditions = [{ email }];
-    if (phoneNumber) {
-        userExistsConditions.push({ phoneNumber });
-    }
-
-    const userExists = await User.findOne({ $or: userExistsConditions });
+    const userExists = await User.findOne({ $or: [{email}, {username}] });
 
     if (userExists) {
         res.status(400);
-        if (userExists.email === email) {
-            throw new Error('A user with this email already exists');
-        }
-        if (phoneNumber && userExists.phoneNumber === phoneNumber) {
-            throw new Error('A user with this phone number already exists');
-        }
+        throw new Error('User with this email or username already exists');
     }
 
-    const user = new User({
+    const user = await User.create({
         username,
         email,
         password,
         phoneNumber
     });
-
-    await user.save();
 
     if (user) {
         res.status(201).json({
@@ -60,6 +48,7 @@ const loginUser = asyncHandler(async (req, res) => {
             _id: user._id,
             username: user.username,
             email: user.email,
+            wishlist: user.wishlist,
             token: generateToken(user._id),
         });
     } else {
@@ -82,4 +71,51 @@ const getUserProfile = asyncHandler(async (req, res) => {
     }
 });
 
-export { registerUser, loginUser, getUserProfile };
+
+// @desc    Add property to user's wishlist
+// @route   POST /api/users/wishlist
+// @access  Private
+const addToWishlist = asyncHandler(async (req, res) => {
+    const { propertyId } = req.body;
+    const user = await User.findById(req.user._id);
+
+    if (user && propertyId) {
+        if (user.wishlist.includes(propertyId)) {
+            // It's already there, so let's remove it
+            user.wishlist = user.wishlist.filter((id) => id.toString() !== propertyId);
+            await user.save();
+            res.json({ message: 'Property removed from wishlist', wishlist: user.wishlist });
+        } else {
+             // Add it
+            user.wishlist.push(propertyId);
+            await user.save();
+            res.status(201).json({ message: 'Property added to wishlist', wishlist: user.wishlist });
+        }
+    } else {
+        res.status(404);
+        throw new Error('User or Property not found');
+    }
+});
+
+
+// @desc    Get user's wishlist
+// @route   GET /api/users/wishlist
+// @access  Private
+const getWishlist = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.user._id).populate({
+        path: 'wishlist',
+        populate: {
+            path: 'seller',
+            select: 'username'
+        }
+    });
+    
+    if (user) {
+        res.json(user.wishlist);
+    } else {
+        res.status(404);
+        throw new Error('User not found');
+    }
+});
+
+export { registerUser, loginUser, getUserProfile, addToWishlist, getWishlist };

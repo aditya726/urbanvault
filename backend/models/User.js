@@ -21,7 +21,7 @@ const userSchema = mongoose.Schema({
         type: String,
         required: true
     },
-    totalSales: {
+    totalSales: { // This will now represent the number of reviews
         type: Number,
         default: 0
     },
@@ -37,8 +37,12 @@ const userSchema = mongoose.Schema({
         type: String,
         trim: true,
         unique: true,
-        sparse: true 
-    }
+        sparse: true
+    },
+    wishlist: [{ // Added wishlist
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Property'
+    }]
 }, {
     timestamps: true
 });
