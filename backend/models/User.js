@@ -21,11 +21,6 @@ const userSchema = mongoose.Schema({
         type: String,
         required: true
     },
-    role: {
-        type: String,
-        enum: ['buyer', 'seller'],
-        required: true
-    },
     totalSales: {
         type: Number,
         default: 0
@@ -41,6 +36,7 @@ const userSchema = mongoose.Schema({
     phoneNumber: {
         type: String,
         trim: true,
+        unique: true,
     }
 }, {
     timestamps: true

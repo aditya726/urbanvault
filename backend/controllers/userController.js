@@ -6,7 +6,7 @@ import generateToken from '../utils/generateToken.js';
 // @route   POST /api/users/register
 // @access  Public
 const registerUser = asyncHandler(async (req, res) => {
-    const { username, email, password, role, phoneNumber } = req.body;
+    const { username, email, password, phoneNumber } = req.body;
 
     const userExists = await User.findOne({ email });
 
