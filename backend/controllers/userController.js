@@ -8,18 +8,27 @@ import generateToken from '../utils/generateToken.js';
 const registerUser = asyncHandler(async (req, res) => {
     const { username, email, password, phoneNumber } = req.body;
 
-    const userExists = await User.findOne({ email });
+    const userExistsConditions = [{ email }];
+    if (phoneNumber) {
+        userExistsConditions.push({ phoneNumber });
+    }
+
+    const userExists = await User.findOne({ $or: userExistsConditions });
 
     if (userExists) {
         res.status(400);
-        throw new Error('User already exists');
+        if (userExists.email === email) {
+            throw new Error('A user with this email already exists');
+        }
+        if (phoneNumber && userExists.phoneNumber === phoneNumber) {
+            throw new Error('A user with this phone number already exists');
+        }
     }
 
     const user = new User({
         username,
         email,
         password,
-        role,
         phoneNumber
     });
 
@@ -30,7 +39,6 @@ const registerUser = asyncHandler(async (req, res) => {
             _id: user._id,
             username: user.username,
             email: user.email,
-            role: user.role,
             token: generateToken(user._id),
         });
     } else {
@@ -52,7 +60,6 @@ const loginUser = asyncHandler(async (req, res) => {
             _id: user._id,
             username: user.username,
             email: user.email,
-            role: user.role,
             token: generateToken(user._id),
         });
     } else {

@@ -7,16 +7,16 @@ import {
     updateProperty,
     deleteProperty
 } from '../controllers/propertyController.js';
-import { protect, seller } from '../middleware/authMiddleware.js';
+import { protect } from '../middleware/authMiddleware.js';
 
 // Public routes
 router.get('/', getProperties);
 router.get('/:id', getPropertyById);
 
-// Private seller routes
-router.post('/', protect, seller, createProperty);
-router.put('/:id', protect, seller, updateProperty);
-router.delete('/:id', protect, seller, deleteProperty);
+// Private seller routes - 'seller' middleware is removed
+router.post('/', protect, createProperty);
+router.put('/:id', protect, updateProperty);
+router.delete('/:id', protect, deleteProperty);
 
 
 export default router;

@@ -30,14 +30,14 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const register = async (username, email, password, role, phoneNumber) => {
+  const register = async (username, email, password, phoneNumber) => {
     try {
       const config = {
         headers: {
           'Content-Type': 'application/json',
         },
       };
-      const { data } = await axios.post(`${backendUrl}/api/users/register`, { username, email, password, role, phoneNumber }, config);
+      const { data } = await axios.post(`${backendUrl}/api/users/register`, { username, email, password, phoneNumber }, config);
       localStorage.setItem('userInfo', JSON.stringify(data));
       setUser(data);
       toast.success('Registered successfully!');

@@ -8,7 +8,6 @@ const RegisterPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [role, setRole] = useState('buyer'); // Default role
   const [phoneNumber, setPhoneNumber] = useState('');
 
   const { user, register } = useAuth();
@@ -26,7 +25,7 @@ const RegisterPage = () => {
       toast.error('Passwords do not match!');
       return;
     }
-    register(username, email, password, role, phoneNumber);
+    register(username, email, password, phoneNumber);
   };
 
   return (
@@ -53,13 +52,6 @@ const RegisterPage = () => {
           <div>
             <label className="block text-sm font-medium text-gray-700">Confirm Password</label>
             <input type="password" required className="w-full px-3 py-2 mt-1 border rounded-md" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
-          </div>
-          <div>
-             <label className="block text-sm font-medium text-gray-700">Register as a</label>
-             <select value={role} onChange={(e) => setRole(e.target.value)} className="w-full px-3 py-2 mt-1 border rounded-md">
-                <option value="buyer">Buyer</option>
-                <option value="seller">Seller</option>
-             </select>
           </div>
           <button type="submit" className="w-full py-2 text-white bg-indigo-600 rounded-md hover:bg-indigo-700">
             Register
