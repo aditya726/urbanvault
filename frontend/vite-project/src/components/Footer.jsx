@@ -1,11 +1,19 @@
-const Footer = () => {
+import { Building2 } from "lucide-react";
+
+export default function Footer() {
   return (
-    <footer className="bg-gray-800 text-white py-6 mt-auto">
-      <div className="container mx-auto text-center">
-        <p>&copy; {new Date().getFullYear()} UrbanVault. All Rights Reserved.</p>
+    <footer className="border-t">
+      <div className="container flex flex-col items-center justify-between gap-4 py-10 md:h-24 md:flex-row md:py-0">
+        <div className="flex flex-col items-center gap-4 px-8 md:flex-row md:gap-2 md:px-0">
+          <Building2 />
+          <p className="text-center text-sm leading-loose md:text-left">
+          The source code is available on GitHub.
+          </p>
+        </div>
+        <p className="text-center text-sm md:text-left">
+          © {new Date().getFullYear()} Urban Vault, Inc. All rights reserved.
+        </p>
       </div>
     </footer>
   );
-};
-
-export default Footer;
+}

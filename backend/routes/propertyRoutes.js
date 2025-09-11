@@ -5,7 +5,8 @@ import {
     getPropertyById,
     createProperty,
     updateProperty,
-    deleteProperty
+    deleteProperty,
+    getMyProperties // Import the new function
 } from '../controllers/propertyController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
@@ -13,7 +14,8 @@ import { protect } from '../middleware/authMiddleware.js';
 router.get('/', getProperties);
 router.get('/:id', getPropertyById);
 
-// Private seller routes - 'seller' middleware is removed
+// Private seller routes
+router.get('/my-listings', protect, getMyProperties); // Add this new route
 router.post('/', protect, createProperty);
 router.put('/:id', protect, updateProperty);
 router.delete('/:id', protect, deleteProperty);

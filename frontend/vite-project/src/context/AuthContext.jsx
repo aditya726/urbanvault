@@ -1,12 +1,14 @@
 import { createContext, useState, useEffect } from 'react';
-import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import API from '../api';
 import toast from 'react-hot-toast';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const backendUrl = import.meta.env.VITE_API_URL;
+  const navigate = useNavigate();
+
   useEffect(() => {
     const storedUser = localStorage.getItem('userInfo');
     if (storedUser) {
@@ -16,44 +18,54 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const config = {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      };
-      const { data } = await axios.post(`${backendUrl}/api/users/login`, { email, password }, config);
+      const { data } = await API.post('/api/users/login', { email, password });
       localStorage.setItem('userInfo', JSON.stringify(data));
       setUser(data);
       toast.success('Logged in successfully!');
+      navigate('/dashboard/my-listings');
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Invalid email or password');
+      toast.error(error.response?.data?.message || 'Login failed');
     }
   };
 
-  const register = async (username, email, password, phoneNumber) => {
+  const register = async (username, email, password) => {
     try {
-      const config = {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      };
-      const { data } = await axios.post(`${backendUrl}/api/users/register`, { username, email, password, phoneNumber }, config);
-      localStorage.setItem('userInfo', JSON.stringify(data));
-      setUser(data);
-      toast.success('Registered successfully!');
+        const { data } = await API.post('/api/users/register', { username, email, password });
+        localStorage.setItem('userInfo', JSON.stringify(data));
+        setUser(data);
+        toast.success('Registration successful!');
+        navigate('/dashboard/my-listings');
     } catch (error) {
-       toast.error(error.response?.data?.message || 'Registration failed');
+        toast.error(error.response?.data?.message || 'Registration failed');
     }
   };
 
   const logout = () => {
     localStorage.removeItem('userInfo');
     setUser(null);
-    toast.success('Logged out successfully!');
+    navigate('/login');
+    toast.success('Logged out.');
+  };
+
+  const toggleWishlist = async (propertyId) => {
+    if (!user) {
+        toast.error("You must be logged in to save properties.");
+        return navigate('/login');
+    }
+    try {
+        const { data } = await API.post('/api/users/wishlist', { propertyId });
+        // Update user state to reflect wishlist change
+        const updatedUser = { ...user, wishlist: data.wishlist };
+        setUser(updatedUser);
+        localStorage.setItem('userInfo', JSON.stringify(updatedUser));
+        toast.success(data.message);
+    } catch (error) {
+        toast.error(error.response?.data?.message || 'Failed to update wishlist');
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, register }}>
+    <AuthContext.Provider value={{ user, login, register, logout, toggleWishlist }}>
       {children}
     </AuthContext.Provider>
   );

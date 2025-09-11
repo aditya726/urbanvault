@@ -1,31 +1,33 @@
 import { Routes, Route } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
-import PrivateRoute, { SellerRoute } from './components/PrivateRoute';
-import HomePage from './pages/HomePage';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import PropertyPage from './pages/PropertyPage';
-import CreatePropertyPage from './pages/CreatePropertyPage';
-import EditPropertyPage from './pages/EditPropertyPage';
-
+import Home from './pages/Home';
+import Properties from './pages/Properties';
+import PropertyDetails from './pages/PropertyDetails';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import DashboardLayout from './components/layout/DashboardLayout';
+import MyListings from './pages/dashboard/MyListings';
+import AddProperty from './pages/dashboard/AddProperty';
+import Wishlist from './pages/dashboard/Wishlist';
 
 function App() {
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
+    <div className="flex flex-col min-h-screen">
       <Header />
-      <main className="container mx-auto px-4 py-8 flex-grow">
+      <main className="flex-grow">
         <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={<HomePage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/property/:id" element={<PropertyPage />} />
+          <Route path="/" element={<Home />} />
+          <Route path="/properties" element={<Properties />} />
+          <Route path="/property/:id" element={<PropertyDetails />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
 
-          {/* Seller-Only Routes */}
-          <Route path="" element={<SellerRoute />}>
-            <Route path="/create-property" element={<CreatePropertyPage />} />
-            <Route path="/property/:id/edit" element={<EditPropertyPage />} />
+          {/* Dashboard Nested Routes */}
+          <Route path="/dashboard" element={<DashboardLayout />}>
+            <Route path="my-listings" element={<MyListings />} />
+            <Route path="add-property" element={<AddProperty />} />
+            <Route path="wishlist" element={<Wishlist />} />
           </Route>
         </Routes>
       </main>

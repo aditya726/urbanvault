@@ -110,4 +110,9 @@ const deleteProperty = asyncHandler(async (req, res) => {
     }
 });
 
-export { getProperties, getPropertyById, createProperty, updateProperty, deleteProperty };
+const getMyProperties = asyncHandler(async (req, res) => {
+    const properties = await Property.find({ seller: req.user._id });
+    res.json(properties);
+});
+
+export { getProperties, getPropertyById, createProperty, updateProperty, deleteProperty, getMyProperties};
