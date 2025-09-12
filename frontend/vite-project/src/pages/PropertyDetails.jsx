@@ -30,7 +30,7 @@ export default function PropertyDetails() {
   const galleryImages = property.images.slice(1, 5);
 
   return (
-    <div className="container mx-auto py-8 sm:py-12">
+    <div className="container mx-auto py-8 sm:py-12 px-4 sm:px-6 lg:px-8 max-w-7xl">
       {/* --- Image Gallery --- */}
       <div className="grid grid-cols-1 md:grid-cols-2 md:grid-rows-2 gap-2 mb-8 max-h-[550px]">
         <div className="md:row-span-2">

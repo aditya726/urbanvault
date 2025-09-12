@@ -48,7 +48,7 @@ export default function Properties() {
     };
 
     return (
-        <div className="container mx-auto py-8">
+        <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8 max-w-7xl">
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                 {/* --- Filters Sidebar --- */}
                 <aside className="lg:col-span-1 p-4 border rounded-lg h-fit bg-card shadow-sm">
