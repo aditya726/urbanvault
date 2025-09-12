@@ -10,6 +10,7 @@ import DashboardLayout from './components/layout/DashboardLayout';
 import MyListings from './pages/dashboard/MyListings';
 import AddProperty from './pages/dashboard/AddProperty';
 import Wishlist from './pages/dashboard/Wishlist';
+import ProfilePage from './pages/userProfile';
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
           <Route path="/property/:id" element={<PropertyDetails />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path='/Profile' element = {<ProfilePage />}/>
 
           {/* Dashboard Nested Routes */}
           <Route path="/dashboard" element={<DashboardLayout />}>

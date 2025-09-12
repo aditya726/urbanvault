@@ -62,7 +62,6 @@ const loginUser = asyncHandler(async (req, res) => {
 // @access  Public
 const getUserProfile = asyncHandler(async (req, res) => {
     const user = await User.findById(req.params.id).select('-password');
-
     if (user) {
         res.json(user);
     } else {
@@ -70,6 +69,19 @@ const getUserProfile = asyncHandler(async (req, res) => {
         throw new Error('User not found');
     }
 });
+
+const getMyUserProfile = asyncHandler(async (req, res) => {
+    // req.user is added by the 'protect' middleware
+    const user = await User.findById(req.user._id).select('-password'); 
+    
+    if (user) {
+        res.json(user);
+    } else {
+        res.status(404);
+        throw new Error('User not found');
+    }
+});
+
 
 
 // @desc    Add property to user's wishlist
@@ -118,4 +130,4 @@ const getWishlist = asyncHandler(async (req, res) => {
     }
 });
 
-export { registerUser, loginUser, getUserProfile, addToWishlist, getWishlist };
+export { registerUser, loginUser, getUserProfile, addToWishlist, getWishlist,getMyUserProfile };
