@@ -2,7 +2,12 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import API from '../api';
 import { Badge } from '@/components/ui/badge';
-import { Star, BedDouble, Bath, Square, User, Mail, Phone } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
+import { Star, BedDouble, Bath, Square, Mail, Share2, Heart, CalendarDays } from 'lucide-react';
 
 export default function PropertyDetails() {
   const { id } = useParams();
@@ -23,79 +28,136 @@ export default function PropertyDetails() {
     fetchProperty();
   }, [id]);
 
-  if (isLoading) return <div className="container text-center py-20">Loading Details...</div>;
-  if (!property) return <div className="container text-center py-20">Property not found.</div>;
+  if (isLoading) return <div className="container py-20 text-center">Loading...</div>;
+  if (!property) return <div className="container py-20 text-center">Property not found.</div>;
 
-  const mainImage = property.images[0] || 'https://placehold.co/1200x800';
-  const galleryImages = property.images.slice(1, 5);
+  const mainImage = property.images?.[0] || 'https://placehold.co/1200x800';
+  const galleryImages = property.images?.slice(1, 5) || [];
 
   return (
-    <div className="container mx-auto py-8 sm:py-12 px-4 sm:px-6 lg:px-8 max-w-7xl">
-      {/* --- Image Gallery --- */}
-      <div className="grid grid-cols-1 md:grid-cols-2 md:grid-rows-2 gap-2 mb-8 max-h-[550px]">
-        <div className="md:row-span-2">
-            <img src={mainImage} alt={property.title} className="w-full h-full object-cover rounded-lg" />
-        </div>
-        {galleryImages.map((img, index) => (
-            <div key={index} className={index > 1 ? 'hidden md:block' : ''}>
-                 <img src={img} alt={`${property.title}-${index + 1}`} className="w-full h-full object-cover rounded-lg" />
+    <div className="container mx-auto max-w-screen-2xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="flex flex-col gap-8 lg:flex-row lg:gap-12">
+        {/* --- Left Pane: Scrollable Content --- */}
+        <div className="w-full lg:w-[65%]">
+          {/* Header */}
+          <div className="mb-4">
+            <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{property.title}</h1>
+            <div className="mt-2 flex items-center justify-between">
+                <p className="text-muted-foreground">{property.address}, {property.location}</p>
+                <div className="flex items-center gap-2">
+                    <Button variant="ghost" size="sm" className="flex items-center gap-2"><Share2 className="h-4 w-4" /> Share</Button>
+                    <Button variant="ghost" size="sm" className="flex items-center gap-2"><Heart className="h-4 w-4" /> Save</Button>
+                </div>
             </div>
-        ))}
-      </div>
+          </div>
 
+          {/* Image Gallery */}
+          <div className="mb-8 grid h-[500px] grid-cols-4 grid-rows-2 gap-2 overflow-hidden rounded-xl">
+            <div className="col-span-4 sm:col-span-2 sm:row-span-2">
+                <img src={mainImage} alt={property.title} className="h-full w-full object-cover"/>
+            </div>
+            {galleryImages.map((img, index) => (
+                <div key={index} className="hidden sm:block">
+                    <img src={img} alt={`${property.title}-${index + 1}`} className="h-full w-full object-cover"/>
+                </div>
+            ))}
+          </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
-        {/* --- Main Details --- */}
-        <div className="lg:col-span-2">
-            <Badge variant="secondary">{property.propertyType}</Badge>
-            <h1 className="text-3xl sm:text-4xl font-bold mt-2">{property.title}</h1>
-            <p className="text-muted-foreground mt-2">{property.address}, {property.location}</p>
+          <Separator className="my-8" />
 
-            <div className="flex items-center flex-wrap gap-x-6 gap-y-2 text-lg my-6">
-                <span className="flex items-center gap-2"><BedDouble className="text-primary h-5 w-5" /> {property.bedrooms} Beds</span>
-                <span className="flex items-center gap-2"><Bath className="text-primary h-5 w-5" /> {property.bathrooms} Baths</span>
-                <span className="flex items-center gap-2"><Square className="text-primary h-5 w-5" /> {property.area} sqft</span>
+          {/* Property Details */}
+          <div className="space-y-8">
+            <div>
+              <h2 className="text-2xl font-semibold">Hosted by {property.seller.username}</h2>
+              <div className="mt-4 flex items-center gap-6 rounded-lg border p-4">
+                  <span className="flex items-center gap-2 text-lg"><BedDouble className="h-5 w-5 text-primary" /> {property.bedrooms} Beds</span>
+                  <span className="flex items-center gap-2 text-lg"><Bath className="h-5 w-5 text-primary" /> {property.bathrooms} Baths</span>
+                  <span className="flex items-center gap-2 text-lg"><Square className="h-5 w-5 text-primary" /> {property.area} sqft</span>
+              </div>
             </div>
             
-            <div className="space-y-8">
-                <div>
-                    <h2 className="text-2xl font-semibold border-b pb-2">Description</h2>
-                    <p className="mt-4 text-muted-foreground leading-relaxed">{property.description}</p>
-                </div>
-
-                <div>
-                    <h2 className="text-2xl font-semibold border-b pb-2">Amenities</h2>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
-                        {property.amenities.map(amenity => (
-                            <div key={amenity} className="bg-slate-100 p-3 rounded-md text-sm sm:text-base text-center">{amenity}</div>
-                        ))}
-                    </div>
-                </div>
+            <div>
+              <h3 className="text-xl font-semibold">About this property</h3>
+              <p className="mt-4 leading-relaxed text-muted-foreground">{property.description}</p>
             </div>
+            
+            <div>
+              <h3 className="text-xl font-semibold">Amenities</h3>
+              <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 md:grid-cols-3">
+                {property.amenities.map(amenity => (
+                  <div key={amenity} className="flex items-center gap-3 py-2">
+                    <span className="text-primary">&#10003;</span>
+                    <span>{amenity}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* --- Seller Info & Price --- */}
-        <div className="lg:col-span-1">
-            <div className="sticky top-24 p-6 border rounded-lg bg-card shadow-sm">
-                <p className="text-3xl font-bold text-primary mb-6">${property.price.toLocaleString()}</p>
-                <h3 className="text-xl font-semibold mb-4">Listed by</h3>
-                <div className="flex items-center gap-4">
-                    <img src={property.seller.profilePicture || `https://avatar.vercel.sh/${property.seller.username}.png`} alt={property.seller.username} className="h-16 w-16 rounded-full" />
-                    <div>
-                        <p className="font-bold">{property.seller.username}</p>
-                         <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                            <Star className="w-4 h-4 text-amber-400 fill-current" />
-                            <span>{property.seller.averageRating || 'N/A'} ({property.seller.totalSales || 0} reviews)</span>
+        {/* --- Right Pane: Sticky Action Panel --- */}
+        <div className="w-full lg:w-[35%]">
+          <div className="sticky top-24">
+            <Card className="border-2">
+              <CardHeader>
+                <CardTitle className="flex items-baseline justify-between">
+                  <span className="text-3xl font-bold">${property.price.toLocaleString()}</span>
+                   <div className="flex items-center gap-1 text-sm font-normal text-muted-foreground">
+                        <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                        <span>{property.seller.averageRating || 'New'} ({property.seller.totalSales || 0} reviews)</span>
+                    </div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="grid w-full items-center gap-1.5">
+                            <Label htmlFor="checkin">Check-in</Label>
+                            <Input id="checkin" type="text" placeholder="Add date" icon={CalendarDays} />
+                        </div>
+                         <div className="grid w-full items-center gap-1.5">
+                            <Label htmlFor="checkout">Check-out</Label>
+                            <Input id="checkout" type="text" placeholder="Add date" icon={CalendarDays} />
                         </div>
                     </div>
+                    <Button size="lg" className="w-full text-lg">
+                        Request to Book
+                    </Button>
                 </div>
-                 <div className='space-y-3 mt-6 border-t pt-4'>
-                    <p className='flex items-center gap-2 text-muted-foreground'><User className='w-4 h-4' /> {property.seller.username}</p>
-                    <p className='flex items-center gap-2 text-muted-foreground'><Mail className='w-4 h-4' /> {property.seller.email}</p>
-                 </div>
-            </div>
+                <Separator className="my-6" />
+                <div className="text-center">
+                    <p className="font-semibold">{property.seller.username}</p>
+                    <a href={`mailto:${property.seller.email}`} className="mt-1 flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-primary">
+                        <Mail className="h-4 w-4" /> Contact Seller
+                    </a>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </div>
   );
 }
+
+// A small modification to your Input component might be needed to accept an icon
+// For example, in your components/ui/input.jsx
+/*
+const Input = React.forwardRef(({ className, type, icon: Icon, ...props }, ref) => {
+  return (
+    <div className="relative">
+      {Icon && <Icon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />}
+      <input
+        type={type}
+        className={cn(
+          "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+          Icon ? "pl-9" : "",
+          className
+        )}
+        ref={ref}
+        {...props}
+      />
+    </div>
+  );
+});
+*/
