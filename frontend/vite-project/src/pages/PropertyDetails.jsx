@@ -1,18 +1,19 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import API from '../api';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Star, BedDouble, Bath, Square, Mail, Share2, Heart, CalendarDays } from 'lucide-react';
+import useAuth from '@/hooks/useAuth';
 
 export default function PropertyDetails() {
   const { id } = useParams();
   const [property, setProperty] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { user, toggleWishlist  } = useAuth();
 
   useEffect(() => {
     const fetchProperty = async () => {
@@ -34,6 +35,9 @@ export default function PropertyDetails() {
   const mainImage = property.images?.[0] || 'https://placehold.co/1200x800';
   const galleryImages = property.images?.slice(1, 5) || [];
 
+  // Check if the current property is in the user's wishlist
+  const isFavorite = user?.wishlist?.includes(property._id);
+
   return (
     <div className="container mx-auto max-w-screen-2xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="flex flex-col gap-8 lg:flex-row lg:gap-12">
@@ -45,8 +49,19 @@ export default function PropertyDetails() {
             <div className="mt-2 flex items-center justify-between">
                 <p className="text-muted-foreground">{property.address}, {property.location}</p>
                 <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="sm" className="flex items-center gap-2"><Share2 className="h-4 w-4" /> Share</Button>
-                    <Button variant="ghost" size="sm" className="flex items-center gap-2"><Heart className="h-4 w-4" /> Save</Button>
+                    <Button variant="ghost" size="sm" className="flex items-center gap-2">
+                        <Share2 className="h-4 w-4" /> Share
+                    </Button>
+                    {/* Updated Save Button with Wishlist Logic */}
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="flex items-center gap-2" 
+                      onClick={() => toggleWishlist(property._id)}
+                    >
+                      <Heart className={`h-4 w-4 transition-colors ${isFavorite ? 'text-red-500 fill-current' : 'text-gray-500'}`} /> 
+                      {isFavorite ? 'Saved' : 'Save'}
+                    </Button>
                 </div>
             </div>
           </div>
@@ -113,11 +128,11 @@ export default function PropertyDetails() {
                     <div className="grid grid-cols-2 gap-4">
                         <div className="grid w-full items-center gap-1.5">
                             <Label htmlFor="checkin">Check-in</Label>
-                            <Input id="checkin" type="text" placeholder="Add date" icon={CalendarDays} />
+                            <Input id="checkin" type="text" placeholder="Add date" />
                         </div>
                          <div className="grid w-full items-center gap-1.5">
                             <Label htmlFor="checkout">Check-out</Label>
-                            <Input id="checkout" type="text" placeholder="Add date" icon={CalendarDays} />
+                            <Input id="checkout" type="text" placeholder="Add date" />
                         </div>
                     </div>
                     <Button size="lg" className="w-full text-lg">
@@ -139,25 +154,3 @@ export default function PropertyDetails() {
     </div>
   );
 }
-
-// A small modification to your Input component might be needed to accept an icon
-// For example, in your components/ui/input.jsx
-/*
-const Input = React.forwardRef(({ className, type, icon: Icon, ...props }, ref) => {
-  return (
-    <div className="relative">
-      {Icon && <Icon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />}
-      <input
-        type={type}
-        className={cn(
-          "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
-          Icon ? "pl-9" : "",
-          className
-        )}
-        ref={ref}
-        {...props}
-      />
-    </div>
-  );
-});
-*/
