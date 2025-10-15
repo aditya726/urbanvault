@@ -12,6 +12,11 @@ const reviewSchema = new Schema({
         ref: 'User',
         required: true
     },
+    property: {
+        type: Schema.Types.ObjectId,
+        ref: 'Property',
+        required: true
+    },
     rating: {
         type: Number,
         required: true,
@@ -21,6 +26,11 @@ const reviewSchema = new Schema({
     comment: {
         type: String,
         trim: true
+    },
+    reviewType: {
+        type: String,
+        enum: ['seller', 'property', 'both'],
+        default: 'both'
     }
 }, {
     timestamps: true

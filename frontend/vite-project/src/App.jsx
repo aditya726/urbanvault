@@ -9,6 +9,7 @@ import Register from './pages/Register';
 import DashboardLayout from './components/layout/DashboardLayout';
 import MyListings from './pages/dashboard/MyListings';
 import AddProperty from './pages/dashboard/AddProperty';
+import Appointments from './pages/dashboard/Appointments';
 import Wishlist from './pages/dashboard/Wishlist';
 import ProfilePage from './pages/userProfile';
 
@@ -29,6 +30,7 @@ function App() {
           <Route path="/dashboard" element={<DashboardLayout />}>
             <Route path="my-listings" element={<MyListings />} />
             <Route path="add-property" element={<AddProperty />} />
+            <Route path="appointments" element={<Appointments />} />
             <Route path="wishlist" element={<Wishlist />} />
           </Route>
         </Routes>

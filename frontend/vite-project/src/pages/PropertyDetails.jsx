@@ -3,16 +3,19 @@ import { useParams } from 'react-router-dom';
 import API from '../api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Star, BedDouble, Bath, Square, Mail, Share2, Heart, CalendarDays } from 'lucide-react';
 import useAuth from '@/hooks/useAuth';
+import { BookingModal } from '@/components/BookingModal';
+import { ReviewForm } from '@/components/ReviewForm';
 
 export default function PropertyDetails() {
   const { id } = useParams();
   const [property, setProperty] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [reviews, setReviews] = useState([]);
+  const [showBookingModal, setShowBookingModal] = useState(false);
   const { user, toggleWishlist  } = useAuth();
 
   useEffect(() => {
@@ -26,8 +29,23 @@ export default function PropertyDetails() {
         setIsLoading(false);
       }
     };
+    
+    const fetchReviews = async () => {
+      try {
+        const { data } = await API.get(`/api/reviews/property/${id}`);
+        setReviews(data.reviews || []);
+      } catch (error) {
+        console.error("Failed to fetch reviews:", error);
+      }
+    };
+    
     fetchProperty();
+    fetchReviews();
   }, [id]);
+
+  const handleReviewSubmitted = (newReview) => {
+    setReviews(prev => [newReview, ...prev]);
+  };
 
   if (isLoading) return <div className="container py-20 text-center">Loading...</div>;
   if (!property) return <div className="container py-20 text-center">Property not found.</div>;
@@ -125,19 +143,18 @@ export default function PropertyDetails() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="grid w-full items-center gap-1.5">
-                            <Label htmlFor="checkin">Check-in</Label>
-                            <Input id="checkin" type="text" placeholder="Add date" />
-                        </div>
-                         <div className="grid w-full items-center gap-1.5">
-                            <Label htmlFor="checkout">Check-out</Label>
-                            <Input id="checkout" type="text" placeholder="Add date" />
-                        </div>
-                    </div>
-                    <Button size="lg" className="w-full text-lg">
-                        Request to Book
+                    <Button 
+                      size="lg" 
+                      className="w-full text-lg" 
+                      onClick={() => user ? setShowBookingModal(true) : window.location.href = '/login'}
+                      disabled={property.seller._id === user?._id}
+                    >
+                      <CalendarDays className="mr-2 h-5 w-5" />
+                      {property.seller._id === user?._id ? 'Your Property' : 'Book a Viewing'}
                     </Button>
+                    {property.seller._id === user?._id && (
+                      <p className="text-xs text-center text-muted-foreground">You cannot book your own property</p>
+                    )}
                 </div>
                 <Separator className="my-6" />
                 <div className="text-center">
@@ -151,6 +168,90 @@ export default function PropertyDetails() {
           </div>
         </div>
       </div>
+
+      {/* Reviews Section */}
+      <div className="mt-16 max-w-7xl mx-auto">
+        <Separator className="my-8" />
+        <h2 className="text-2xl font-bold mb-6">Reviews</h2>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Review Form */}
+          {user && property.seller._id !== user._id && (
+            <div>
+              <ReviewForm 
+                property={property} 
+                sellerId={property.seller._id} 
+                onReviewSubmitted={handleReviewSubmitted}
+              />
+            </div>
+          )}
+          
+          {/* Reviews List */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold">
+              {reviews.length} {reviews.length === 1 ? 'Review' : 'Reviews'}
+            </h3>
+            
+            {reviews.length === 0 ? (
+              <Card>
+                <CardContent className="py-8 text-center text-muted-foreground">
+                  No reviews yet. Be the first to review this property!
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
+                {reviews.map((review) => (
+                  <Card key={review._id}>
+                    <CardContent className="pt-6">
+                      <div className="flex items-start gap-4">
+                        <img 
+                          src={review.buyer.profilePicture || `https://avatar.vercel.sh/${review.buyer.username}.png`}
+                          alt={review.buyer.username}
+                          className="h-10 w-10 rounded-full"
+                        />
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
+                            <p className="font-semibold">{review.buyer.username}</p>
+                            <div className="flex items-center gap-1">
+                              {[...Array(5)].map((_, i) => (
+                                <Star 
+                                  key={i} 
+                                  className={`h-4 w-4 ${i < review.rating ? 'fill-amber-400 text-amber-400' : 'text-gray-300'}`}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {new Date(review.createdAt).toLocaleDateString('en-US', { 
+                              year: 'numeric', 
+                              month: 'long', 
+                              day: 'numeric' 
+                            })}
+                          </p>
+                          {review.comment && (
+                            <p className="mt-3 text-sm leading-relaxed">{review.comment}</p>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Booking Modal */}
+      {showBookingModal && (
+        <BookingModal 
+          property={property}
+          onClose={() => setShowBookingModal(false)}
+          onBookingSuccess={() => {
+            setShowBookingModal(false);
+          }}
+        />
+      )}
     </div>
   );
 }

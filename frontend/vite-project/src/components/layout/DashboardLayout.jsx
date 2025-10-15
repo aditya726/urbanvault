@@ -1,10 +1,11 @@
 import { NavLink, Outlet, Navigate } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
-import { List, PlusCircle, Heart, Loader2 } from 'lucide-react';
+import { List, PlusCircle, Heart, Loader2, CalendarDays } from 'lucide-react';
 
 const sidebarNavItems = [
     { title: "My Listings", href: "/dashboard/my-listings", icon: <List className='h-4 w-4' /> },
     { title: "Add Property", href: "/dashboard/add-property", icon: <PlusCircle className='h-4 w-4' /> },
+    { title: "Appointments", href: "/dashboard/appointments", icon: <CalendarDays className='h-4 w-4' /> },
     { title: "Wishlist", href: "/dashboard/wishlist", icon: <Heart className='h-4 w-4' /> },
 ];
 

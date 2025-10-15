@@ -1,5 +1,7 @@
 import asyncHandler from 'express-async-handler';
 import Property from '../models/Property.js';
+import cloudinary from '../config/cloudinary.js';
+import streamifier from 'streamifier';
 
 const uploadFromBuffer = (buffer) => {
     return new Promise((resolve, reject) => {

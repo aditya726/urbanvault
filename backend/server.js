@@ -10,7 +10,9 @@ import connectDB from './config/db.js';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
 import userRoutes from './routes/userRoutes.js';
 import propertyRoutes from './routes/propertyRoutes.js';
-import reviewRoutes from './routes/reviewRoutes.js'; // Added
+import reviewRoutes from './routes/reviewRoutes.js';
+import appointmentRoutes from './routes/appointmentRoutes.js';
+import notificationRoutes from './routes/notificationRoutes.js';
 
 // --- Initial Configuration ---
 dotenv.config();
@@ -46,7 +48,9 @@ app.get('/', (req, res) => {
 
 app.use('/api/users', userRoutes);
 app.use('/api/properties', propertyRoutes);
-app.use('/api/reviews', reviewRoutes); // Added
+app.use('/api/reviews', reviewRoutes);
+app.use('/api/appointments', appointmentRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // --- Custom Error Handling ---
 app.use(notFound);
