@@ -54,6 +54,25 @@ const propertySchema = new Schema({
         type: String,
         enum: ['available', 'sold', 'pending'],
         default: 'available'
+    },
+    bids: [{
+        bidder: {
+            type: Schema.Types.ObjectId,
+            ref: 'User',
+            required: true
+        },
+        amount: {
+            type: Number,
+            required: true
+        },
+        createdAt: {
+            type: Date,
+            default: Date.now
+        }
+    }],
+    minimumBid: {
+        type: Number,
+        default: 0
     }
 }, {
     timestamps: true

@@ -4,6 +4,7 @@ import API from '../api';
 import { PropertyCard } from "../components/PropertyCard";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from '@/components/ui/separator';
 
@@ -15,6 +16,7 @@ export default function Properties() {
     const query = useQuery();
     const [properties, setProperties] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [showMyListings, setShowMyListings] = useState(false);
     const [filters, setFilters] = useState({
         location: query.get('location') || '',
         propertyType: 'All',
@@ -22,15 +24,24 @@ export default function Properties() {
         maxPrice: '',
     });
 
+    const userInfo = JSON.parse(localStorage.getItem('userInfo') || 'null');
+
     useEffect(() => {
         const fetchProperties = async () => {
             setIsLoading(true);
             try {
-                const activeFilters = Object.fromEntries(
-                    Object.entries(filters).filter(([_, v]) => v !== '' && v !== 'All')
-                );
-                const { data } = await API.get('/api/properties', { params: activeFilters });
-                setProperties(data);
+                if (showMyListings) {
+                    // Fetch only user's listings
+                    const { data } = await API.get('/api/properties/my-listings');
+                    setProperties(data);
+                } else {
+                    // Fetch all properties with filters
+                    const activeFilters = Object.fromEntries(
+                        Object.entries(filters).filter(([_, v]) => v !== '' && v !== 'All')
+                    );
+                    const { data } = await API.get('/api/properties', { params: activeFilters });
+                    setProperties(data);
+                }
             } catch (error) {
                 console.error("Failed to fetch properties:", error);
             } finally {
@@ -41,7 +52,7 @@ export default function Properties() {
             fetchProperties();
         }, 500); // Debounce requests
         return () => clearTimeout(timer);
-    }, [filters]);
+    }, [filters, showMyListings]);
 
     const handleFilterChange = (key, value) => {
         setFilters(prev => ({ ...prev, [key]: value }));
@@ -49,54 +60,76 @@ export default function Properties() {
 
     return (
         <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8 max-w-7xl">
+            {/* Toggle for My Listings */}
+            {userInfo && (
+                <div className="mb-6 flex gap-3">
+                    <Button 
+                        variant={!showMyListings ? 'default' : 'outline'}
+                        onClick={() => setShowMyListings(false)}
+                    >
+                        All Properties
+                    </Button>
+                    <Button 
+                        variant={showMyListings ? 'default' : 'outline'}
+                        onClick={() => setShowMyListings(true)}
+                    >
+                        My Listings
+                    </Button>
+                </div>
+            )}
+
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                 {/* --- Filters Sidebar --- */}
                 <aside className="lg:col-span-1 p-4 border rounded-lg h-fit bg-card shadow-sm">
-                    <h3 className="font-bold text-lg mb-4">Filter Properties</h3>
+                    <h3 className="font-bold text-lg mb-4">
+                        {showMyListings ? 'My Listings' : 'Filter Properties'}
+                    </h3>
                     <Separator />
-                    <div className="space-y-6 mt-4">
-                        <div>
-                             <Label>Location</Label>
-                             <Input 
-                                placeholder="e.g., California" 
-                                value={filters.location}
-                                onChange={(e) => handleFilterChange('location', e.target.value)}
-                            />
-                        </div>
-                        <div>
-                            <Label>Property Type</Label>
-                            <Select onValueChange={(value) => handleFilterChange('propertyType', value)} defaultValue="All">
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Property Type" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="All">All Types</SelectItem>
-                                    <SelectItem value="House">House</SelectItem>
-                                    <SelectItem value="Apartment">Apartment</SelectItem>
-                                    <SelectItem value="Villa">Villa</SelectItem>
-                                    <SelectItem value="Commercial">Commercial</SelectItem>
-                                    <SelectItem value="Land">Land</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <fieldset>
-                            <Label>Price Range</Label>
-                            <div className='flex gap-2 mt-2'>
-                               <Input 
-                                    placeholder="Min" 
-                                    type="number" 
-                                    value={filters.minPrice}
-                                    onChange={(e) => handleFilterChange('minPrice', e.target.value)}
-                                />
-                               <Input 
-                                    placeholder="Max" 
-                                    type="number" 
-                                    value={filters.maxPrice}
-                                    onChange={(e) => handleFilterChange('maxPrice', e.target.value)}
+                    {!showMyListings && (
+                        <div className="space-y-6 mt-4">
+                            <div>
+                                <Label>Location</Label>
+                                <Input 
+                                    placeholder="e.g., California" 
+                                    value={filters.location}
+                                    onChange={(e) => handleFilterChange('location', e.target.value)}
                                 />
                             </div>
-                        </fieldset>
-                    </div>
+                            <div>
+                                <Label>Property Type</Label>
+                                <Select onValueChange={(value) => handleFilterChange('propertyType', value)} defaultValue="All">
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Property Type" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="All">All Types</SelectItem>
+                                        <SelectItem value="House">House</SelectItem>
+                                        <SelectItem value="Apartment">Apartment</SelectItem>
+                                        <SelectItem value="Villa">Villa</SelectItem>
+                                        <SelectItem value="Commercial">Commercial</SelectItem>
+                                        <SelectItem value="Land">Land</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <fieldset>
+                                <Label>Price Range</Label>
+                                <div className='flex gap-2 mt-2'>
+                                <Input 
+                                        placeholder="Min" 
+                                        type="number" 
+                                        value={filters.minPrice}
+                                        onChange={(e) => handleFilterChange('minPrice', e.target.value)}
+                                    />
+                                <Input 
+                                        placeholder="Max" 
+                                        type="number" 
+                                        value={filters.maxPrice}
+                                        onChange={(e) => handleFilterChange('maxPrice', e.target.value)}
+                                    />
+                                </div>
+                            </fieldset>
+                        </div>
+                    )}
                 </aside>
 
                 {/* --- Property Listings --- */}

@@ -39,6 +39,11 @@ const appointmentSchema = new mongoose.Schema({
   },
   buyerPhone: {
     type: String
+  },
+  bidAmount: {
+    type: Number,
+    required: true,
+    default: 0
   }
 }, {
   timestamps: true

@@ -27,6 +27,11 @@ const getProperties = asyncHandler(async (req, res) => {
 
     const query = {};
 
+    // Exclude seller's own properties if user is authenticated
+    if (req.user && req.user._id) {
+        query.seller = { $ne: req.user._id };
+    }
+
     if (keyword) {
         query.title = { $regex: keyword, $options: 'i' };
     }
@@ -165,4 +170,104 @@ const getMyProperties = asyncHandler(async (req, res) => {
     res.json(properties);
 });
 
-export { getProperties, getPropertyById, createProperty, updateProperty, deleteProperty, getMyProperties};
+// @desc    Place a bid on a property
+// @route   POST /api/properties/:id/bid
+// @access  Private
+const placeBid = asyncHandler(async (req, res) => {
+    const { amount } = req.body;
+    const property = await Property.findById(req.params.id);
+
+    if (!property) {
+        res.status(404);
+        throw new Error('Property not found');
+    }
+
+    // Check if user is trying to bid on their own property
+    if (property.seller.toString() === req.user._id.toString()) {
+        res.status(400);
+        throw new Error('You cannot bid on your own property');
+    }
+
+    // Validate bid amount
+    if (!amount || amount <= 0) {
+        res.status(400);
+        throw new Error('Please provide a valid bid amount');
+    }
+
+    // Check if bid meets minimum requirement
+    if (amount < property.minimumBid) {
+        res.status(400);
+        throw new Error(`Bid must be at least $${property.minimumBid}`);
+    }
+
+    // Add bid to property
+    const bid = {
+        bidder: req.user._id,
+        amount: Number(amount),
+        createdAt: new Date()
+    };
+
+    property.bids.push(bid);
+    await property.save();
+
+    // Populate the bidder info before sending response
+    const updatedProperty = await Property.findById(property._id)
+        .populate('bids.bidder', 'username email profilePicture');
+
+    res.status(201).json({
+        message: 'Bid placed successfully',
+        bids: updatedProperty.bids
+    });
+});
+
+// @desc    Get all bids for a property
+// @route   GET /api/properties/:id/bids
+// @access  Public
+const getPropertyBids = asyncHandler(async (req, res) => {
+    const property = await Property.findById(req.params.id)
+        .populate('bids.bidder', 'username email profilePicture')
+        .select('bids minimumBid');
+
+    if (!property) {
+        res.status(404);
+        throw new Error('Property not found');
+    }
+
+    // Sort bids by amount (highest first)
+    const sortedBids = property.bids.sort((a, b) => b.amount - a.amount);
+
+    res.json({
+        bids: sortedBids,
+        minimumBid: property.minimumBid,
+        highestBid: sortedBids.length > 0 ? sortedBids[0].amount : 0
+    });
+});
+
+// @desc    Get property appointments (for showing booked dates/times)
+// @route   GET /api/properties/:id/appointments
+// @access  Public
+const getPropertyAppointments = asyncHandler(async (req, res) => {
+    const Appointment = (await import('../models/Appointment.js')).default;
+    
+    const appointments = await Appointment.find({
+        property: req.params.id,
+        status: { $in: ['pending', 'confirmed'] } // Only show active appointments
+    })
+    .select('appointmentDate appointmentTime status buyer bidAmount')
+    .populate('buyer', 'username')
+    .sort({ appointmentDate: 1, appointmentTime: 1 });
+
+    res.json(appointments);
+});
+
+export { 
+    getProperties, 
+    getPropertyById, 
+    createProperty, 
+    updateProperty, 
+    deleteProperty, 
+    getMyProperties,
+    placeBid,
+    getPropertyBids,
+    getPropertyAppointments
+};

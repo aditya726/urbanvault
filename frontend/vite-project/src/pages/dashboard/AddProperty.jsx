@@ -24,6 +24,7 @@ export default function AddProperty() {
         area: '',
         propertyType: '',
         amenities: '',
+        minimumBid: '', // New field for minimum bid
     });
 
     const handleChange = (e) => {
@@ -124,6 +125,17 @@ export default function AddProperty() {
                             <Input id="price" name="price" type="number" value={propertyData.price} onChange={handleChange} required />
                         </div>
                         <div>
+                            <Label htmlFor="minimumBid">Minimum Bid ($)</Label>
+                            <Input 
+                                id="minimumBid" 
+                                name="minimumBid" 
+                                type="number" 
+                                value={propertyData.minimumBid} 
+                                onChange={handleChange} 
+                                placeholder="Optional - defaults to 0"
+                            />
+                        </div>
+                        <div>
                             <Label>Property Type</Label>
                             <Select onValueChange={handleSelectChange} value={propertyData.propertyType} required>
                                 <SelectTrigger><SelectValue placeholder="Select a type" /></SelectTrigger>
@@ -140,18 +152,23 @@ export default function AddProperty() {
                             <Label htmlFor="bedrooms">Bedrooms</Label>
                             <Input id="bedrooms" name="bedrooms" type="number" value={propertyData.bedrooms} onChange={handleChange} required />
                         </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
                         <div>
                             <Label htmlFor="bathrooms">Bathrooms</Label>
                             <Input id="bathrooms" name="bathrooms" type="number" value={propertyData.bathrooms} onChange={handleChange} required />
                         </div>
+                        <div>
+                            <Label htmlFor="area">Area (sqft)</Label>
+                            <Input id="area" name="area" type="number" value={propertyData.area} onChange={handleChange} required />
+                        </div>
+                    </div>
+                    <div className="text-sm text-muted-foreground p-2 bg-blue-50 rounded border border-blue-200">
+                        💡 <strong>Minimum Bid:</strong> Set a minimum bid amount to ensure only serious buyers book appointments. Leave empty to allow any bid amount.
                     </div>
                     <div>
-                        <Label htmlFor="area">Area (sqft)</Label>
-                        <Input id="area" name="area" type="number" value={propertyData.area} onChange={handleChange} required />
-                    </div>
-                    <div>
-                        <Label htmlFor="amenities">Amenities (comma separated)</Label>
-                        <Input id="amenities" name="amenities" placeholder="e.g. Pool, Gym, Parking" value={propertyData.amenities} onChange={handleChange} />
+                        <Label htmlFor="amenities">Amenities (comma-separated)</Label>
+                        <Input id="amenities" name="amenities" value={propertyData.amenities} onChange={handleChange} placeholder="e.g., Pool, Gym, Parking" />
                     </div>
                 </fieldset>
 

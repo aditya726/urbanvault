@@ -114,6 +114,25 @@ export default function Appointments() {
             const isBuyer = appointment.buyer._id === userInfo?._id;
             const isSeller = appointment.seller._id === userInfo?._id;
 
+            // Handle case where property might be deleted
+            if (!appointment.property) {
+              return (
+                <Card key={appointment._id} className="opacity-60">
+                  <CardContent className="py-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">Property Unavailable</p>
+                        <p className="text-xs text-muted-foreground mt-1">This property is no longer available</p>
+                      </div>
+                      <Badge className={getStatusColor(appointment.status)}>
+                        {appointment.status}
+                      </Badge>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            }
+
             return (
               <Card key={appointment._id}>
                 <CardHeader>
@@ -152,6 +171,13 @@ export default function Appointments() {
                         <MapPin className="h-4 w-4 text-muted-foreground" />
                         <span>{appointment.property.address}</span>
                       </div>
+                      {appointment.bidAmount && (
+                        <div className="flex items-center gap-3 text-sm">
+                          <span className="font-semibold text-green-600">
+                            Bid Amount: ${appointment.bidAmount.toLocaleString()}
+                          </span>
+                        </div>
+                      )}
                     </div>
 
                     {/* Right Column */}

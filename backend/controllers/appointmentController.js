@@ -8,12 +8,18 @@ import { sendAppointmentEmail, sendSellerNotificationEmail } from '../utils/emai
 // @route   POST /api/appointments
 // @access  Private
 export const createAppointment = asyncHandler(async (req, res) => {
-  const { propertyId, appointmentDate, appointmentTime, notes, buyerPhone } = req.body;
+  const { propertyId, appointmentDate, appointmentTime, notes, buyerPhone, bidAmount } = req.body;
 
   // Validate required fields
   if (!propertyId || !appointmentDate || !appointmentTime) {
     res.status(400);
     throw new Error('Please provide all required fields');
+  }
+
+  // Validate bid amount
+  if (!bidAmount || bidAmount <= 0) {
+    res.status(400);
+    throw new Error('Please provide a valid bid amount');
   }
 
   // Get property details
@@ -30,6 +36,22 @@ export const createAppointment = asyncHandler(async (req, res) => {
     throw new Error('You cannot book an appointment for your own property');
   }
 
+  // Check if bid meets minimum requirement
+  if (bidAmount < property.minimumBid) {
+    res.status(400);
+    throw new Error(`Bid must be at least $${property.minimumBid}`);
+  }
+
+  // Get highest bid for this property
+  const sortedBids = property.bids.sort((a, b) => b.amount - a.amount);
+  const highestBid = sortedBids.length > 0 ? sortedBids[0].amount : 0;
+
+  // Check if user's bid is competitive (within reasonable range)
+  if (highestBid > 0 && bidAmount < highestBid * 0.9) {
+    res.status(400);
+    throw new Error(`Your bid should be competitive. Current highest bid is $${highestBid}`);
+  }
+
   // Create appointment
   const appointment = await Appointment.create({
     property: propertyId,
@@ -39,7 +61,8 @@ export const createAppointment = asyncHandler(async (req, res) => {
     appointmentTime,
     notes: notes || '',
     buyerEmail: req.user.email,
-    buyerPhone: buyerPhone || ''
+    buyerPhone: buyerPhone || '',
+    bidAmount: Number(bidAmount)
   });
 
   // Populate appointment details
