@@ -8,7 +8,7 @@ export default function Footer() {
         <div className="flex flex-col items-center gap-4 md:flex-row md:gap-2">
           <Building2 />
           <p className="text-center text-sm leading-loose md:text-left">
-          The source code is available on GitHub.
+          Urban Vault
           </p>
         </div>
         <p className="text-center text-sm md:text-left">
